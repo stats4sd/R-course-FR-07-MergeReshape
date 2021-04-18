@@ -13,7 +13,7 @@
 <meta name="progressive" content="true" />
 <meta name="allow-skip" content="true" />
 
-<title>Merging and Reshaping Data</title>
+<title>Fusion et remodelage des données</title>
 
 
 <!-- highlightjs -->
@@ -116,93 +116,95 @@ $(document).ready(function () {
 
 <div class="topics">
 
-<div id="section-merging-and-reshaping-data" class="section level1">
-<h1>Merging and Reshaping data</h1>
-<div id="section-overview" class="section level2">
-<h2>Overview</h2>
-<p>This tutorial gives a short introduction to some very useful data manipulation processes:</p>
-<p>Merging data using he <code>_join()</code> functions from within the <code>dplyr</code> library</p>
-<p>Reshaping data using the <code>pivot_()</code> functions from the <code>tidyr</code> library</p>
-<p>These functions can be incredibly useful for bringing together data from multiple sources into a consistent tidy format ready for analysis. Trying to replicate this sort of functionality in Excel is extremely time-consuming and has high potential for human error.</p>
-<p>This tutorial provides just a few examples, to show how the code works, but links are provided to more extensive resources if this is something you are interested in learning more about.</p>
-<p>If you’re trying to replicate what’s in this workbook on your computer, note that you may not already have the <code>tidyr</code> library installed, so make sure you have it downloaded and then loaded before following the code in RStudio. You should already have <code>dplyr</code> installed within RStudio, but you will still need to remember to load it.</p>
+<div id="section-joindre-et-transformer-des-données" class="section level1">
+<h1>Joindre et transformer des données</h1>
+<div id="section-vue-densemble" class="section level2">
+<h2>Vue d’ensemble</h2>
+<p>Ce tutoriel donne une brève introduction à certaines fonctions additionnelles de manipulation de données très utiles :</p>
+<ul>
+<li><p>Joindre deux tableaux de donnees en utilisant les fonctions <code>_join()</code> du package <code>dplyr</code>.</p></li>
+<li><p>Passer du format long a large et inversement en utilisant les fonctions <code>pivot_()</code> du package <code>tidyr</code>.</p></li>
+</ul>
+<p>Ces fonctions peuvent être incroyablement utiles pour rassembler des données provenant de sources multiples dans un format cohérent et ordonné, prêt à être analysé. Essayer de reproduire ce type de fonctionnalité dans Excel prend énormément de temps et présente un fort risque d’erreur humaine.</p>
+<p>Ce tutoriel ne fournit que quelques exemples, pour montrer comment le code fonctionne, mais des liens sont fournis vers des ressources plus complètes si vous souhaitez en savoir plus.</p>
+<p>Si vous essayez de reproduire ce qui se trouve dans ce tutoriel sur votre ordinateur, notez que le package <code>tidyr</code> n’est peut-être pas déjà installée, donc assurez-vous de l’avoir installé et chargé avant de suivre le code dans RStudio. Vous devriez déjà avoir <code>dplyr</code> installé dans RStudio, mais vous devrez quand même vous rappeler de le charger.</p>
 <pre><code>library(dplyr)
 library(tidyr)</code></pre>
 </div>
-<div id="section-data-for-this-session" class="section level2">
-<h2>Data for this session</h2>
-<p>In this session we will use two related fictive datasets. The first one, called <code>experiment2017</code> is an on farm experiment, where each of 20 farmers has collected values of yield for two plots, one where a new treatment has been applied (column “Treatment”), and one where this new treatment has not been applied (column “Control”).</p>
-<p>The other dataset called <code>interview2019</code> contains the responses of 71 farmers - some of which participated in the 2017 experiment - when asked whether they would accept to participate to a new experiment (column “Accept”). You can download these two datasets <a href="https://github.com/stats4sd/R4CCRP_08Merge/raw/main/data-merge.zip">here</a></p>
-<p>Our goal will be to combine these two datasets in order to explore whether for a farmer, the outcome of the 2017 experiment is related to their willingness to participate in a new experiment.</p>
-<p>You can have a look at the <code>experiment2017</code> dataset here:</p>
-<div id="htmlwidget-78f8ff68d3f1558d2bce" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-78f8ff68d3f1558d2bce">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],["Anu Malimba","Djamilatou Itondo","Elone Ngoma","Zonga Mulongo","Hawaou Etame","Eliane Ouandie","Romaine Makau","Coline Kiessou","Nadia Yondo","Yolande Kiki","Mbiybe Yume","Agbor Mukala","Ndedi Ebode","Yaya Mbakop","Lawal Ngandu","Robin Boko","Fabien Nde","Alexandre Esanji","Jacob Kuka","Anthony Kamalandua"],[331,304,750,104,10,540,424,798,763,743,941,369,807,261,574,913,450,645,373,262],[949,153,28,622,299,721,412,971,481,578,953,538,113,369,919,839,348,537,115,285],[4.159839,4.127491,4.125305,4.130613,4.13676,4.14545,4.145878,4.146338,4.14271,4.130234,4.146678,4.157985,4.152868,4.102666,4.09906,4.107758,4.145783,4.085736,4.114845,4.14889],[11.582091,11.564142,11.566062,11.531707,11.54421,11.491345,11.487472,11.483642,11.477913,11.516895,11.87906,11.88563,11.858833,11.875491,11.87165,11.8495,11.86696,11.895782,11.823748,11.87564]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Farmer<\/th>\n      <th>Control<\/th>\n      <th>Treatment<\/th>\n      <th>Latitude<\/th>\n      <th>Longitude<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
-<p>And you can explore the <code>interview2019</code> dataset below:</p>
-<div id="htmlwidget-cf99a8750096571f062b" style="width:100%;height:auto;" class="datatables html-widget"></div>
-<script type="application/json" data-for="htmlwidget-cf99a8750096571f062b">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71"],["Zaitouna Bebey","Mariamou Ngolu","Rougayatou Kiatoko","Sahndra Masikini","Zeinabou Obambe","Violaine Suke","Amber Nkumu","Mia Mvone","Manon Koagne","Veronique Njoya","Lawal Nenne","Fote Bebey","Nforbi Toguo","Mvondo Boko","Kimbu Lemnyuy","Silvain Mboumoua","Fabrice Emade","Ashton Linzenge","Alphonse Mejo'o","Jose Lekunze","Rachidatou Mejo'o","Naghen Liboko","Fua Songe","Amaniyatou Assale","Azah Elame","Manon Mpongo","Ella Mubambwe","Harmonie Ewale","Lucile Meba'a","Ange Masuka","Djal Mvone","Nzo Ndongue","Langke Abba","Neba Likuta","Adamou Arabo","Dominique Hamilou","Ellis Mbok","Daniel Zula","Benoit Alima","Sebastien Okapi","Hawaou Etame","Eliane Ouandie","Romaine Makau","Coline Kiessou","Nadia Yondo","Yolande Kiki","Robin Boko","Fabien Nde","Alexandre Esanji","Jacob Kuka","Anthony Kamalandua","Angu Nyassa","Anyi Billong","Ateh Tebi","Kien Ahmadou","Ngwi Ebenye","Peggy Tanga","Claude Kabange","Aline Nadege","Cerys Makeda","Amanda Kibangi","Tanzetanau Mpembe","Mbiybe Kumba","Mbe Eyene","Kenjo Maleta","Lazare Hamilou","Timothee Milandu","David Dikuta","Abelin Elombe","Samuel Moundi","Michael Nzoumba"],["Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male"],["Yes","No","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Name<\/th>\n      <th>Gender<\/th>\n      <th>Accept<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
+<div id="section-données-pour-cette-session" class="section level2">
+<h2>Données pour cette session</h2>
+<p>Dans cette session, nous utiliserons deux tableaux de données fictifs. Le premier, appelé <code>experiment2017</code> est une expérience sur une exploitation agricole, où chacun des 20 agriculteurs a recueilli des valeurs de rendement pour deux parcelles, l’une où un nouveau traitement a été appliqué (colonne “Treatement”), et l’autre où ce nouveau traitement n’a pas été appliqué (colonne “Control”).</p>
+<p>L’autre tableau de données appelé <code>interview2019</code> contient les réponses de 71 agriculteurs - dont certains ont participé à l’experiment2017 - lorsqu’on leur a demandé s’ils accepteraient de participer à une nouvelle expérience (colonne “Accept”). Vous pouvez télécharger ces deux jeux de données <a href="https://github.com/stats4sd/R4CCRP_08Merge/raw/main/data-merge.zip">ici</a></p>
+<p>Notre objectif sera de combiner ces deux tableaux de données afin d’explorer si, pour un agriculteur, les rendements obtenus pour l’expérience de 2017 semblent etre liés à son souhait de participer à une nouvelle expérience.</p>
+<p>Vous pouvez consulter le jeu de données <code>experiment2017</code> ici :</p>
+<div id="htmlwidget-af06b1968b7665a7a441" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-af06b1968b7665a7a441">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],["Anu Malimba","Djamilatou Itondo","Elone Ngoma","Zonga Mulongo","Hawaou Etame","Eliane Ouandie","Romaine Makau","Coline Kiessou","Nadia Yondo","Yolande Kiki","Mbiybe Yume","Agbor Mukala","Ndedi Ebode","Yaya Mbakop","Lawal Ngandu","Robin Boko","Fabien Nde","Alexandre Esanji","Jacob Kuka","Anthony Kamalandua"],[331,304,750,104,10,540,424,798,763,743,941,369,807,261,574,913,450,645,373,262],[949,153,28,622,299,721,412,971,481,578,953,538,113,369,919,839,348,537,115,285],[4.159839,4.127491,4.125305,4.130613,4.13676,4.14545,4.145878,4.146338,4.14271,4.130234,4.146678,4.157985,4.152868,4.102666,4.09906,4.107758,4.145783,4.085736,4.114845,4.14889],[11.582091,11.564142,11.566062,11.531707,11.54421,11.491345,11.487472,11.483642,11.477913,11.516895,11.87906,11.88563,11.858833,11.875491,11.87165,11.8495,11.86696,11.895782,11.823748,11.87564]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Farmer<\/th>\n      <th>Control<\/th>\n      <th>Treatment<\/th>\n      <th>Latitude<\/th>\n      <th>Longitude<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[2,3,4,5]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+<p>Et vous pouvez explorer le jeu de données <code>interview2019</code> ci-dessous :</p>
+<div id="htmlwidget-3ed289de16d569ef25ea" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3ed289de16d569ef25ea">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71"],["Zaitouna Bebey","Mariamou Ngolu","Rougayatou Kiatoko","Sahndra Masikini","Zeinabou Obambe","Violaine Suke","Amber Nkumu","Mia Mvone","Manon Koagne","Veronique Njoya","Lawal Nenne","Fote Bebey","Nforbi Toguo","Mvondo Boko","Kimbu Lemnyuy","Silvain Mboumoua","Fabrice Emade","Ashton Linzenge","Alphonse Mejo'o","Jose Lekunze","Rachidatou Mejo'o","Naghen Liboko","Fua Songe","Amaniyatou Assale","Azah Elame","Manon Mpongo","Ella Mubambwe","Harmonie Ewale","Lucile Meba'a","Ange Masuka","Djal Mvone","Nzo Ndongue","Langke Abba","Neba Likuta","Adamou Arabo","Dominique Hamilou","Ellis Mbok","Daniel Zula","Benoit Alima","Sebastien Okapi","Hawaou Etame","Eliane Ouandie","Romaine Makau","Coline Kiessou","Nadia Yondo","Yolande Kiki","Robin Boko","Fabien Nde","Alexandre Esanji","Jacob Kuka","Anthony Kamalandua","Angu Nyassa","Anyi Billong","Ateh Tebi","Kien Ahmadou","Ngwi Ebenye","Peggy Tanga","Claude Kabange","Aline Nadege","Cerys Makeda","Amanda Kibangi","Tanzetanau Mpembe","Mbiybe Kumba","Mbe Eyene","Kenjo Maleta","Lazare Hamilou","Timothee Milandu","David Dikuta","Abelin Elombe","Samuel Moundi","Michael Nzoumba"],["Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Female","Female","Female","Female","Female","Female","Female","Female","Female","Female","Male","Male","Male","Male","Male","Male","Male","Male","Male","Male"],["Yes","No","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes","Yes","Yes","Yes","Yes","No","Yes","Yes","Yes","Yes","No","No","No","No","No","No","No","No","Yes"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>Name<\/th>\n      <th>Gender<\/th>\n      <th>Accept<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"order":[],"autoWidth":false,"orderClasses":false,"columnDefs":[{"orderable":false,"targets":0}]}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="section-full-joins" class="section level2">
-<h2>Full joins</h2>
-<p>dplyr has a number of clever functions for merging data. In all cases we need to have two data frames which share a common ID variable or variables. In this session we will cover two of the key ones <code>full_join()</code> and <code>inner_join()</code></p>
-<p><code>full_join()</code> will give us an output data frame which contains all of the rows from both datasets we are trying to merge, whether or not there is a match in the corresponding data or not. If there is no match, missing values will be filled in for the columns from the corresponding data frame.</p>
-<p>Here is a diagram that tries to explain it using the <code>experiment2017</code> and <code>interview2019</code> datasets:</p>
+<div id="section-jointures-complètes" class="section level2">
+<h2>Jointures complètes</h2>
+<p>dplyr dispose d’un certain nombre de fonctions utiles pour fusionner des données. Pour chacune, nous devons avoir deux tableaux de données qui partagent une ou plusieurs variables d’identification communes. Dans cette session, nous allons couvrir deux de ces fonctions : <code>full_join()</code> et <code>inner_join()</code>.</p>
+<p>Le resultat de <code>full_join()</code> nous donnera un tableau de données qui contient toutes les lignes des deux ensembles de données que nous essayons de fusionner, qu’il y ait ou non une correspondance dans les variables d’identification. S’il n’y a pas de correspondance, des valeurs manquantes seront ajoutees pour les colonnes du tableau de données correspondant.</p>
+<p>Voici un diagramme qui tente d’expliquer comment marche <code>full_join()</code> en utilisant les tableaux de données <code>experiment2017</code> et <code>interview2019</code> :</p>
 <p><img src="images/fulljoinCCRP.jpg" width="85%" style="display: block; margin: auto;" /></p>
 <p><br></p>
-<p>In <code>full_join()</code>, we need to provide the names of two data frames, and then the argument “by” to provide the common ID variable or variables. In this case we have one common ID variable which is the names of the farmers. It is found in the column <code>Farmer</code> for the <code>experiment2017</code> dataset and in the column <code>Name</code> for the <code>interview2019</code> dataset. So using the following command, we will get an output containing all the farmers and columns from both datasets:</p>
+<p>Dans <code>full_join()</code>, nous devons fournir les noms des deux tableaux de données, et ensuite l’argument “by” pour fournir la ou les variables d’identification communes. Dans notre cas, nous avons une variable ID commune qui est le nom des agriculteurs. Cette variable est la colonne <code>Farmer</code> pour le tableau de données <code>experiment2017</code> et la colonne <code>Name</code> pour le tableu de données <code>interview2019</code>. Ainsi, en utilisant la commande suivante, nous obtiendrons une sortie contenant tous les agriculteurs et toutes les colonnes des deux ensembles de données :</p>
 <div class="tutorial-exercise" data-label="fj" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>full_join(experiment2017,interview2019,by=c(&quot;Farmer&quot;=&quot;Name&quot;))</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>As you see, in the <em>by</em> statement, we indicated the column name <code>Farmer</code> of the first indicated dataset (<code>experiment2017</code>) on the left of the equal sign, and the column name <code>Name</code> of the second dataset (<code>interview2019</code>) on its right. The order matters.</p>
-<p>Also note that none of the farmers have the same name, but in general this can easily happen, which would mess up our join as R would be unable to know how to combine the multiple rows with same names. That’s why you should always use an ID variable - or combination of variables - that you <strong>know</strong> will be unique to each farmer. A good way to ensure that is to generate and assign a unique ID to each farmer yourself.</p>
-<p>Anyway, back to the result of <code>full_join()</code>. We started with two dataframes, one with 20 farmers, the other one with 71 farmers, and the resulting dataframe contains 80, which is the total number of distinct farmers. If you carefully check the output, you will see that there is quite a number of missing values in it (<code>NA</code>). This is because we kept the data of every farmer. Some farmers are in both datasets, but all the other farmers are only in one of the two datasets. When it is the case, the rest of the data is filled with NAs.</p>
-<p>This is not what we want though. What we want is to only keep the combined data for those farmers that are in both datasets. We can achieve that using an inner join.</p>
+<p>Comme vous le voyez, dans l’instruction <em>by</em>, nous avons indiqué le nom de colonne <code>Farmer</code> du premier tableau de données indiqué (<code>experiment2017</code>) à gauche du signe égal, et le nom de colonne <code>Name</code> du deuxième tableau de données (<code>interview2019</code>) à sa droite. L’ordre est important.</p>
+<p>Notez également qu’aucun des agriculteurs n’a le même nom, mais en général cela peut facilement arriver, ce qui perturberait notre jointure car R serait incapable de savoir comment combiner les multiples lignes avec les mêmes noms. C’est pourquoi vous devez toujours utiliser une variable ID - ou une combinaison de variables - dont vous <strong>savez</strong> qu’elle sera unique pour chaque agriculteur. Une bonne façon de s’en assurer est de générer et d’attribuer vous-même un ID unique à chaque agriculteur.</p>
+<p>Bref, revenons au résultat de <code>full_join()</code>. Nous avons commencé avec deux tableaux de données, l’un avec 20 agriculteurs, l’autre avec 71 agriculteurs, et le tableau de données résultant contient 80 lignes, qui est le nombre total d’agriculteurs distincts. Si vous vérifiez attentivement le résultat, vous verrez qu’il y a un certain nombre de valeurs manquantes (<code>NA</code>). Ceci est dû au fait que nous avons conservé les données de chaque agriculteur. Certains agriculteurs sont dans les deux tableaux de données, mais tous les autres agriculteurs ne sont que dans l’un des deux tableaux de données. Lorsque c’est le cas, le reste des données est rempli de NAs.</p>
+<p>Mais ce n’est pas ce que nous voulons. Ce que nous voulons, c’est conserver uniquement les données combinées pour les agriculteurs qui sont dans les deux ensembles de données. Nous pouvons y parvenir en utilisant <code>inner_join()</code>.</p>
 </div>
-<div id="section-inner-joins" class="section level2">
-<h2>Inner joins</h2>
-<p><code>inner_join()</code> will give us an output data frame which only contains the rows that match.</p>
+<div id="section-jointures-internes" class="section level2">
+<h2>Jointures internes</h2>
+<p><code>inner_join()</code> nous donnera un tableau de données de sortie qui contient seulement les lignes qui ou l’identifiant existe dans les deux tableaux de données d’origine.</p>
 <p><img src="images/innerjoinCCRP.jpg" width="85%" style="display: block; margin: auto;" /></p>
 <p><br></p>
-<p>So with our example it will only include the farmers that participated in the 2017 experiment and then where asked whether they’d be willing to participate in a new experiment. We won’t have any missing values created with an <code>inner_join</code>.</p>
+<p>Ainsi, dans notre exemple, nous n’inclurons que les agriculteurs qui ont participé à l’expérience de 2017 <strong>et</strong> à qui on a demandé s’ils étaient prêts à participer à une nouvelle expérience. Nous n’aurons pas de valeurs manquantes créées avec un <code>inner_join</code>.</p>
 <div class="tutorial-exercise" data-label="ij" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>inner_join(experiment2017,interview2019,by=c(&quot;Farmer&quot;=&quot;Name&quot;))</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>As you see, we started again with 20 rows for one dataset and 71 rows for the other one, and after using <code>inner_join</code>, we are left with only 11 rows. These are the farmers for which we can do our analysis. So let’s save this merged dataset as an object called <code>MergedData</code>, to use in the next steps.</p>
+<p>Comme vous le voyez, nous avions 20 lignes pour un des tableaux de données et 71 lignes pour l’autre, et après avoir utilisé <code>inner_join</code>, il ne nous reste que 11 lignes. Ce sont les agriculteurs pour lesquels nous pouvons faire notre analyse. Sauvegardons donc ce nouveau tableau de données comme un objet appelé <code>MergedData</code>, pour l’utiliser dans les étapes suivantes.</p>
 <div class="tutorial-exercise" data-label="assign" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>MergedData&lt;-inner_join(experiment2017,interview2019,by=c(&quot;Farmer&quot;=&quot;Name&quot;))</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>Remember that it’s normal that we don’t see any output, because we are saving the result as an object and not asking R to show us anything.</p>
+<p>Rappelez-vous qu’il est normal que nous ne voyions aucune sortie, parce que nous sauvegardons le résultat comme un objet et ne demandons pas à R de nous montrer quoi que ce soit.</p>
 </div>
-<div id="section-more-complex-joining" class="section level2">
-<h2>More complex joining</h2>
-<p>These two join functions provide functionality which will cover most of the commonly needs you would have for merging two data sets together. But there are several other ways of merging data together in dplyr with different <code>_join()</code> functions, which are worth being aware of for other situations.</p>
-<p>There is a comprehensive tutorial on all the different joining functions in <code>dplyr</code> here: <a href="https://rpubs.com/williamsurles/293454" class="uri">https://rpubs.com/williamsurles/293454</a></p>
+<div id="section-autres-jointures" class="section level2">
+<h2>Autres jointures</h2>
+<p>Ces deux fonctions de jointure fournissent une fonctionnalité qui couvrira la plupart des besoins courants que vous pourriez avoir pour fusionner deux ensembles de données. Mais il y a plusieurs autres façons de combiner des données dans dplyr avec d’autres fonctions <code>_join()</code>, qui valent la peine d’être connues pour d’autres situations.</p>
+<p>Il y a un tutoriel complet sur toutes les différentes fonctions de jointure dans <code>dplyr</code> ici : <a href="https://rpubs.com/williamsurles/293454" class="uri">https://rpubs.com/williamsurles/293454</a></p>
 </div>
-<div id="section-going-long" class="section level2">
-<h2>Going long</h2>
-<p>Despite having two measures of yield per farmer, the experiment2017 dataset has only one row per farmer. This is because it is in what is known as “wide” format. To better picture what we mean by “wide” format, let’s imagine a few farmers that would have collected 4 measures of yield. One for each of three treatments, and one for the control plot. The data for these farmers would look like the following:</p>
+<div id="section-format-large-et-format-long" class="section level2">
+<h2>Format large et format long</h2>
+<p>Malgré la présence de deux mesures de rendement par agriculteur, l’ensemble de données de l’expérience 2017 ne comporte qu’une seule ligne par agriculteur. Cela est dû au fait qu’il s’agit d’un format dit “large”. Pour mieux comprendre ce que nous entendons par format “large”, imaginons quelques agriculteurs qui auraient collecté 4 mesures de rendement. Une pour chacun de trois traitements, et une pour la parcelle de contrôle. Les données de ces agriculteurs ressembleraient à ce qui suit :</p>
 <p><img src="images/WideCCRP.JPG" width="50%" style="display: block; margin: auto;" /></p>
-<p>But this is not the format which R generally likes to operate on - R much prefers “long” format where we have one row per observation. In our little example, we had 4 observations per farmer, so in “long” format, we would have four rows for each farmer and instead of 4 numeric yield variables, we would only have two columns. A numeric one containing the values of yield, and a categorical one indicating the treatment or type of plots on which the yield was measured:</p>
+<p>Mais ce n’est pas le format sur lequel R aime généralement opérer - R préfère en general le format “long” où nous avons une ligne par observation. Dans notre petit exemple, nous avions 4 observations par agriculteur, donc au format “long”, nous aurions quatre lignes pour chaque agriculteur et au lieu de 4 variables numériques de rendement, nous n’aurions que deux colonnes. Une colonne numérique contenant les valeurs de rendement, et une colonne catégorielle indiquant le traitement ou le type de parcelles sur lesquelles le rendement a été mesuré :</p>
 <p><img src="images/longCCRP.jpg" width="35%" style="display: block; margin: auto;" /></p>
-<p>And if you think to when we’ve used <code>ggplot2</code>, we always had one unique variable for our y argument, and we used categorical variables to separate it into groups, facets, colours and it was similar for modelling. We had one dependant variable only and the groups of the Anova were defined by come categorical variable. So in general long formats work much better than wide formats for making graphs or doing some statistical modelling.</p>
-<p>And to help us analyse our dataframe <code>MergedData</code> where the experimental data is in wide format, we should turn it into long format.</p>
-<p>The <code>pivot_longer()</code> function from the <code>tidyr</code> library allows us to do this.</p>
+<p>Et si vous pensez à quand nous avons utilisé <code>ggplot2</code>, nous avions toujours une variable unique pour notre argument y, et nous utilisions des variables catégorielles pour le séparer en groupes, facettes, couleurs et c’était similaire pour la modélisation. Nous avions une seule variable dépendante et les groupes de l’Anova étaient définis par une variable catégorielle. Donc, en général, les formats longs fonctionnent beaucoup mieux que les formats larges pour faire des graphiques ou de la modélisation statistique.</p>
+<p>Et pour nous aider à analyser notre tableau de donnees <code>MergedData</code> où les données expérimentales sont en format large, nous devons les transformer en format long.</p>
+<p>La fonction <code>pivot_longer()</code> du package <code>tidyr</code> est l’une des fonctions les plus intuitives a utiliser pour faire ca.</p>
 <div class="tutorial-exercise" data-label="gather0" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>MergedData %&gt;%
   pivot_longer(cols=Control:Treatment, names_to=&quot;Plot_type&quot;,values_to=&quot;Yield&quot;)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>If we pipe into the function, we need to supply three arguments:</p>
+<p>Si on utilise l’operateur pipe avant d’appeler la fonction, alors on doit fournir trois arguments :</p>
 <ul>
-<li><p>Which columns within the data are we ‘pivotting’ into the long format. We don’t want all of the columns - only the ones which refer to the common attribute, that is the yield measures. We could use the function c() to indicate the columns to combine: <code>c(Control, Treatment)</code>, but our two columns are next to each other, so we can use a slight shortcut by using a colon: <code>FirstColumn:LastColumn</code>. In our case we have only two columns, so it’s not much of a shortcut though. Note that we do not need to use quotation marks when referencing existing columns. This argument is called “cols”.</p></li>
-<li><p>The name of the new column where the existing column names will be placed in the restructured data. This argument is called “names_to” - it requires an input within quotation marks. In this case the columns are the two different types of plots (treatment or control), so we can call it “Plot_type” for example.</p></li>
-<li><p>The name of the new column where the data values will be placed in the restructured data. This argument is called “values_to” - it requires an input within quotation marks. In this case the values refer to the yield in the plot, so it makes good sense to call it “Yield”.</p></li>
+<li><p>Quelles sont les colonnes des données que nous ramener en une seule longue colonne. Nous ne voulons pas toutes les colonnes, seulement celles qui font référence à l’attribut commun, c’est-à-dire les mesures de rendement. Nous pourrions utiliser la fonction c() pour indiquer les colonnes à combiner : <code>c(Control, Treatement)</code>, mais nos deux colonnes sont côte à côte, nous pouvons donc utiliser un léger raccourci en utilisant les deux points : <code>PremièreColonne:DernièreColonne</code>. Dans notre cas, nous n’avons que deux colonnes, donc ce n’est pas vraiment un raccourci. Notez que nous n’avons pas besoin d’utiliser les guillemets lorsque nous faisons référence à des colonnes existantes. Cet argument est appelé “cols”.</p></li>
+<li><p>Le nom de la nouvelle colonne qui va contenir le nom des colonnes d’origine des valeurs de notre longue colonne. Cet argument est appelé “names_to” - il nécessite une entrée entre guillemets. Dans notre cas, les colonnes regrouper sont les deux différents types de parcelles (traitement ou contrôle), donc nous pouvons l’appeler “Plot_type” par exemple.</p></li>
+<li><p>Le nom de la nouvelle longue colonne où les valeurs des données seront placées dans les données restructurées. Cet argument est appelé “values_to” - il nécessite une entrée entre guillemets egalement. Dans notre cas, les valeurs font référence au rendement dans la parcelle, il est donc logique de l’appeler “Yield” (traduction anglaise de rendement).</p></li>
 </ul>
-<p>If I wasn’t using a pipe, the first argument of this function would need to be the dataframe.</p>
-<p>Note that this new data has 22 rows - 1 row for each type of plot of each farmer.</p>
-<p>In RStudio, you could see this in the environment pane; or by using the <code>dim()</code> function to get the dimensions. I am going to assign the previous step into a new object, called <code>LongData</code> and then check the dimensions this way to compare between the two data frames.</p>
+<p>Si je n’utilisais pas l’operateur pipe, le premier argument de cette fonction devrait bien entendu être le tableau de données.</p>
+<p>Notez que ce nouveau tableau de données a 22 lignes - 1 ligne pour chaque type de parcelle de chaque agriculteur (11 agriculteurs).</p>
+<p>Dans RStudio, vous pouvez voir cela dans le panneau d’environnement ; ou en utilisant la fonction <code>dim()</code> pour obtenir les dimensions. Je vais assigner le resultat de l’étape précédente a un nouvel objet, appelé <code>LongData</code> et ensuite vérifier les dimensions de cette façon pour comparer les tableaux de données.</p>
 <div class="tutorial-exercise" data-label="gather1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>LongData&lt;- MergedData %&gt;%
   pivot_longer(cols=Control:Treatment, names_to=&quot;Plot_type&quot;,values_to=&quot;Yield&quot;)
@@ -211,18 +213,18 @@ dim(LongData)
 dim(MergedData)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>Again, having the data in long format makes it much easier to analyse, plot or manipulate.</p>
-<div id="section-answering-our-original-question" class="section level3">
-<h3>Answering our original question</h3>
-<p>Remember that our objective was to explore the relationship between the outcome of the 2017 experiment and the willingness to participate in a new one. There are various plots that we could make for that. A nice one is to show the yield on the y axis, the plot type on the x axis, make lines connecting the yield of a same farmer so that each line represent one farmer, and add colour to the lines based on whether the farmer accepted or not to participate in a new experiment:</p>
+<p>Le fait de disposer de données au format long facilite grandement l’analyse, la representation graphique ou la manipulation.</p>
+<div id="section-répondre-à-notre-question-initiale" class="section level3">
+<h3>Répondre à notre question initiale</h3>
+<p>Rappelez-vous que notre objectif était d’explorer la relation entre le résultat de l’expérience de 2017 et la volonté de participer à une nouvelle expérience. Il existe plusieurs graphiques que nous pourrions réaliser à cette fin. Un bon exemple est de montrer le rendement sur l’axe des y, le type de parcelle sur l’axe des x, de tracer des lignes reliant les rendements d’un même agriculteur de sorte que chaque ligne représente un agriculteur, et d’ajouter de la couleur aux lignes selon que l’agriculteur a accepté ou non de participer à une nouvelle expérience :</p>
 <div class="tutorial-exercise" data-label="gather2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>LongData %&gt;%
   ggplot(aes(x=Plot_type, y=Yield, color=Accept, group=Farmer))+
   geom_line()</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
-<p>Notice that it is the group aesthetics that define which are the points connected by the lines. In our case, these are the points corresponding to a same farmer.</p>
-<p>We can see that most of the lines that go down are red, that is most of the farmers who saw a decrease in yield between the control and treatment plots during the 2017 experiment, did not want to participate in a new experiment according to the 2019 interview. In contrast, the lines that go up are blue. This might be easier to see using facets:</p>
+<p>Remarquez que c’est l’esthétique du groupe qui définit quels sont les points reliés par les lignes. Dans notre cas, ce sont les points correspondant à un même agriculteur.</p>
+<p>Nous pouvons voir que la plupart des lignes qui descendent sont rouges, c’est-à-dire que la plupart des agriculteurs qui ont vu une baisse de rendement entre les parcelles de contrôle et de traitement lors de l’expérimentation 2017, n’ont pas voulu participer à une nouvelle expérimentation selon l’entretien de 2019. En revanche, les lignes qui vont vers le haut sont bleues. Cela pourrait être plus facile à voir en utilisant des facettes :</p>
 <div class="tutorial-exercise" data-label="gather3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>LongData %&gt;%
   ggplot(aes(x=Plot_type, y=Yield, color=Accept, group=Farmer))+
@@ -231,26 +233,26 @@ dim(MergedData)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
 </div>
-</div>
-<div id="section-going-wide" class="section level2">
-<h2>Going wide</h2>
-<p>If we had our data in long format and wanted to go to wide format, we could use the function <code>pivot_wider()</code>, which is in effect the reverse of the <code>pivot_longer()</code> function. So it requires the reverse inputs:</p>
+<div id="section-passer-au-format-large" class="section level3">
+<h3>Passer au format large</h3>
+<p>Si nous avions nos données au format long et que nous voulions passer au format large, nous pourrions utiliser la fonction <code>pivot_wider()</code>, qui est en fait l’inverse de la fonction <code>pivot_longer()</code>. Elle nécessite donc les entrées inverses :</p>
 <div class="tutorial-exercise" data-label="gather4" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>LongData %&gt;%
       pivot_wider(names_from=Plot_type,values_from=Yield)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"default","exercise.checker":"NULL"}</script>
 </div>
 <ul>
-<li>The names column from which each unique value in this column will become one of the column names in the new data. This argument is “names_from”.<br />
+<li>La colonne de noms à partir de laquelle chaque valeur unique de notre longue colonne deviendra l’un des noms de colonne dans le tableau de données au format large. Cet argument est “names_from”.<br />
 </li>
-<li>The value column from the data - which will make up the contents of these new columns. This argument is “values_from”.</li>
+<li>La longue colonne de valeurs qui constituera le contenu de ces nouvelles colonnes. Cet argument est “values_from”.</li>
 </ul>
-<p>So in this case the “names_from” column is <code>Plot_type</code>and the “values_from” is <code>Yield</code>.</p>
-<p>We got our data back in wide format!</p>
+<p>Donc dans notre cas, la colonne “names_from” est <code>Plot_type</code> et la colonne “values_from” est <code>Yield</code>.</p>
+<p>Nous avons récupéré nos données au format large !</p>
 </div>
-<div id="section-more-complex-transformations" class="section level2">
-<h2>More complex transformations</h2>
-Like the <code>_join()</code> set of functions, the <code>pivot_()</code> set of functions have lots of extensions, which can allow for lots of flexibility in reshaping your data. If you are interested in learning more about this, a tutorial can be found here: <a href="https://tidyr.tidyverse.org/articles/pivot.html" class="uri">https://tidyr.tidyverse.org/articles/pivot.html</a> 
+</div>
+<div id="section-autres-transformations" class="section level2">
+<h2>Autres transformations</h2>
+Comme pour les fonctions <code>_join()</code>, il existe d’autres fonctions dans le package tidyr pour transformer les donnees. Si vous souhaitez en savoir plus à ce sujet, vous pouvez jeter un oeil ici par exemple : <a href="https://juba.github.io/tidyverse/12-tidyr.html#les-verbes-de-tidyr" class="uri">https://juba.github.io/tidyverse/12-tidyr.html#les-verbes-de-tidyr</a>. 
 <script type="application/shiny-prerendered" data-context="server-start">
 library(dplyr)
 library(ggplot2)
@@ -356,7 +358,7 @@ output$`tutorial-exercise-gather4-output` <- renderUI({
 
 <!-- begin doc-metadata -->
 <div id="doc-metadata">
-<h2 class="title toc-ignore" style="display:none;">Merging and Reshaping Data</h2>
+<h2 class="title toc-ignore" style="display:none;">Fusion et remodelage des données</h2>
 </div>
 <!-- end doc-metadata -->
 
